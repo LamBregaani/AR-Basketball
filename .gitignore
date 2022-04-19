@@ -72,3 +72,6 @@ crashlytics-build.properties
 Assets/Resources/HighScores.asset
 Assets/Resources/HighScores.asset.meta
 *.asset
+Packages/com.ptc.vuforia.engine-10.5.5.tgz
+Packages/manifest.json
+Packages/packages-lock.json
