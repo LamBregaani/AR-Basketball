@@ -16,7 +16,7 @@ public class ObjectPool : ScriptableObject
     [SerializeField] private int m_maxObjects;
 
     //List of spawned objects in the pool
-    //NonSerialized field prevents these values from being saved between sessions when in editor mode
+    //NonSerialized field prevents a bug where these values fare saved between play sessions when in editor mode
     [System.NonSerialized] public List<GameObject> m_spawnedObjects = new List<GameObject>();
 
     [System.NonSerialized] private int m_currentObjIndex;
