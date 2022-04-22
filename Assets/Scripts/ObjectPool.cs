@@ -3,82 +3,131 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
 
-[CreateAssetMenu(fileName = "New Object Pool", menuName = "Object Pool")]
-public class ObjectPool : ScriptableObject
+
+public class ObjectPool<T> 
 {
-    [Tooltip("The object to spawn")]
-    [SerializeField] private GameObject m_Object;
+    //List of the deasired compoents on the spawned obejcts
+    private List<T> m_spawnedObjectComponents;
 
-    [Tooltip("Time before objects are returned to the spawn position or 'Despawned'")]
-    [SerializeField] private float m_despawnDelay;
+    //List of the spawned gameobjects
+    private List<GameObject> m_spawnedObjects = new List<GameObject>();
 
-    //Max number of objects in the pool
-    [SerializeField] private int m_maxObjects;
+    private int m_currentObjIndex;
 
-    //List of spawned objects in the pool
-    //NonSerialized field prevents a bug where these values fare saved between play sessions when in editor mode
-    [System.NonSerialized] public List<GameObject> m_spawnedObjects = new List<GameObject>();
+    //Properties for this object pool
+    private ObjectPoolProperties m_poolProperties;
 
-    [System.NonSerialized] private int m_currentObjIndex;
-
-    public void Init()
+    public ObjectPool(ObjectPoolProperties _props)
     {
-        //Spawn the objects
-        for (int i = 0; i < m_maxObjects; i++)
-        {
-            var ball = Instantiate(m_Object, ObjectPoolProperties.spawnPosition, Quaternion.identity);
+        m_poolProperties = _props;
 
-            m_spawnedObjects.Add(ball);
+        //Create a new list based on the passed generic type
+        m_spawnedObjectComponents = new List<T>();
+
+        //Spawn the objects
+        for (int i = 0; i < m_poolProperties.MaxObjects; i++)
+        {
+            //Essentially instatiates an object into the world
+            var obj = m_poolProperties.SpawnObject(m_poolProperties.PoolObject, ObjectPoolGlobalProperties.spawnPosition, Quaternion.identity);
+
+            m_spawnedObjects.Add(obj);
+
+            //Gets the desired component based on the passed generic type
+            var objComponent = obj.GetComponent<T>();
+
+            m_spawnedObjectComponents.Add(objComponent);
+
+            //Disables the object until it is needed
+            obj.SetActive(false);
         }
 
     }
 
     /// <summary>
-    /// Reutrns the next instance of the object in the pool
+    /// Reutrns the next instance of a desired component on an object in the pool
     /// </summary>
     /// <returns></returns>
-    public GameObject GetObject()
+    public T GetObjectComponent()
     {
-        var obj = m_spawnedObjects[m_currentObjIndex];
+        var objComp = m_spawnedObjectComponents[m_currentObjIndex];
+
+        var objGO = m_spawnedObjects[m_currentObjIndex];
 
         m_currentObjIndex++;
 
         //Allows for looping through the list
-        m_currentObjIndex %= m_spawnedObjects.Count;
+        m_currentObjIndex %= m_spawnedObjectComponents.Count;
 
-        ObjectPoolProperties.objectPoolMono.StartCoroutine(ObjectDespawn(obj));
+        ObjectPoolGlobalProperties.objectPoolMono.StartCoroutine(ObjectDespawn(objGO));
 
-        return obj;
+        objGO.SetActive(true);
+
+        return objComp;
+    }
+
+    /// <summary>
+    /// Returns the next instance of a gameobject in the pool
+    /// </summary>
+    /// <returns></returns>
+    public GameObject GetObject()
+    {
+        var objGO = m_spawnedObjects[m_currentObjIndex];
+
+        m_currentObjIndex++;
+
+        //Allows for looping through the list
+        m_currentObjIndex %= m_spawnedObjectComponents.Count;
+
+        ObjectPoolGlobalProperties.objectPoolMono.StartCoroutine(ObjectDespawn(objGO));
+
+        objGO.SetActive(true);
+
+        return objGO;
     }
 
     /// <summary>
     /// Returns the passed obj to the starting postion after a set delay
     /// </summary>
-    /// <param name="obj"></param>
+    /// <param name="_obj"></param>
     /// <returns></returns>
-    private IEnumerator ObjectDespawn(GameObject obj)
-    {
-        yield return new WaitForSeconds(m_despawnDelay);
+    private IEnumerator ObjectDespawn(GameObject _obj)
+    { 
 
-        obj.transform.position = ObjectPoolProperties.spawnPosition;
+        yield return new WaitForSeconds(m_poolProperties.DespawnDelay);
+
+        _obj.SetActive(false);
+
+        _obj.transform.position = ObjectPoolGlobalProperties.spawnPosition;
     }
 }
 
 /// <summary>
 /// Global properties for the Object Pools
 /// </summary>
-public static class ObjectPoolProperties
+public static class ObjectPoolGlobalProperties
 {
     //Global spawn position for objects
     public static Vector3 spawnPosition = new Vector3(1000, 1000, 1000);
 
     //Monobehaviour instance so that the object pools have access to coroutines
-    public static MonoBehaviour objectPoolMono;
+    public static ObjectPoolController objectPoolMono;
 
-    static ObjectPoolProperties()
+    static ObjectPoolGlobalProperties()
     {
+        //Creates an instance of the ObjectPoolController
         var go = new GameObject("ObjectPoolMonobehaviour");
 
-        objectPoolMono = go.AddComponent<MonoBehaviour>();
+        objectPoolMono = go.AddComponent<ObjectPoolController>();
     }
 }
+
+/// <summary>
+/// Used so that the Onnject Pool class has access to StartCoroutine()
+/// Will probably be removed later
+/// </summary>
+public class ObjectPoolController : MonoBehaviour
+{
+
+}
+
+
