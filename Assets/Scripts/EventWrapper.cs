@@ -22,6 +22,8 @@ public class EventWrapper : UnityEvent
     {
         onEventInvoked?.Invoke();
 
+       // onEventInvokedUnity?.Invoke();
+
         Invoke();
     }
 
@@ -65,7 +67,9 @@ public class EventWrapper<T> : UnityEvent
     public void InvokeEvent(T val)
     { 
         Invoke();
-        onEventInvoked.Invoke(val);
+        onEventInvoked?.Invoke(val);
+
+        //onEventInvokedUnity?.Invoke();
     }
 
     /// <summary>
@@ -107,7 +111,9 @@ public class EventWrapper<T1, T2> : UnityEvent
     public void InvokeEvent(T1 val, T2 val2)
     {
         Invoke();
-        onEventInvoked.Invoke(val, val2);
+        onEventInvoked?.Invoke(val, val2);
+
+        //onEventInvokedUnity?.Invoke();
     }
 
     /// <summary>
