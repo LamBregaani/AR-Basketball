@@ -12,7 +12,7 @@ public class InputController : MonoBehaviour
 
     public static InputController instance;
 
-    private const string m_starterProfile = "UI Input";
+    private const string m_starterProfile = "Main Input";
 
     public void Awake()
     {
