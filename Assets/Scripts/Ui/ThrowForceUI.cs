@@ -28,9 +28,9 @@ public class ThrowForceUI : MonoBehaviour
 
     private void OnEnable()
     {
-        m_input.oncontinuedSwipe.AddListener(UpdateArrow);
+        m_input?.oncontinuedSwipe.AddListener(UpdateArrow);
 
-        m_input.onSwipeEnded.AddListener(ClearImage);
+        m_input?.onSwipeEnded.AddListener(ClearImage);
     }
 
     /// <summary>
