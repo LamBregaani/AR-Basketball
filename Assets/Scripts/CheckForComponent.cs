@@ -21,4 +21,16 @@ public static class CheckForComponent
         }
         return false;
     }
+
+    public static bool CheckComponent<T>(GameObject other, out T component)
+    {
+
+        component = other.GetComponent<T>();
+
+        if (component != null)
+        {
+            return true;
+        }
+        return false;
+    }
 }
