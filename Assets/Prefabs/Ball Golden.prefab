@@ -114,7 +114,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b22711f515602e64991372c2fa45bda5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballValue: 1
+  pointValue: 3
 --- !u!135 &7836214448100677596
 SphereCollider:
   m_ObjectHideFlags: 0
