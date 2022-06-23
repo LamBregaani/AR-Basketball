@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +16,10 @@ public class ThrowBall : MonoBehaviour
 
     [Tooltip("The camera or object to get the forward vector from")]
     [SerializeField] private GameObject m_camera;
+
+    public EventWrapper onBallThorwn = new EventWrapper();
+
+    public static Action onBallthrownGlobal = delegate { };
 
     //Call for getting a ball from a pool
     private BallSupplier m_ballSupplier;
@@ -39,12 +44,12 @@ public class ThrowBall : MonoBehaviour
 
     private void OnEnable()
     {
-        m_input.onSwipeEnded.AddListener(Throw);
+        m_input?.onSwipeEnded.AddListener(Throw);
     }
 
     private void OnDisable()
     {
-        m_input.onSwipeEnded.RemoveListener(Throw);
+        m_input?.onSwipeEnded.RemoveListener(Throw);
     }
 
 
@@ -70,6 +75,10 @@ public class ThrowBall : MonoBehaviour
         m_canThrow = false;
 
         ball.AddForce(direction * _percentage * m_maxThrowForce, ForceMode.Impulse);
+
+        onBallThorwn?.InvokeEvent();
+
+        onBallthrownGlobal?.Invoke();
 
         StartCoroutine(ThrowDelay());
     }
