@@ -99,7 +99,7 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
         if(count > previousCount)
         {
             length = lockedSpawnRates.Length;
-            ItemAdded(spawnRates, count - previousCount);
+            //ItemAdded(spawnRates, count - previousCount);
         }
         else if (count < previousCount)
         {
@@ -159,8 +159,8 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
                     {
                         var value = spawnRates[i];
 
-                        if (value == 0)
-                            value = 0.1f;
+                        //if (value == 0)
+                        //    value = 0.1f;
 
                         var locked = newLockedSpawnRates[i];
 
@@ -283,47 +283,47 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
         Debug.Log($"Item removed: Total = {debug}");
     }
 
-    private void ItemAdded(float[] spawnrates, int change)
-    {
-        var useLockedValues = false;
+    //private void ItemAdded(float[] spawnrates, int change)
+    //{
+    //    var useLockedValues = false;
 
-        var unlockedCount = 0;
+    //    var unlockedCount = 0;
 
-        for (int i = 0; i < previousSpawnRates.Length - change; i++)
-        {
-            if (lockedSpawnRates[i] == false)
-            {
-                unlockedCount++;
-            }
-        }
+    //    for (int i = 0; i < previousSpawnRates.Length - change; i++)
+    //    {
+    //        if (lockedSpawnRates[i] == false)
+    //        {
+    //            unlockedCount++;
+    //        }
+    //    }
 
-        var remainder = 100f;
+    //    var remainder = 100f;
 
 
-        for (int i = 0; i < previousSpawnRates.Length - change; i++)
-        {
-            remainder -= previousSpawnRates[i];
-        }
+    //    for (int i = 0; i < previousSpawnRates.Length - change; i++)
+    //    {
+    //        remainder -= previousSpawnRates[i];
+    //    }
 
-        var reduction = remainder / unlockedCount;
+    //    var reduction = remainder / unlockedCount;
 
-        for (int i = 0; i < previousSpawnRates.Length - change; i++)
-        {
-            if (lockedSpawnRates[i] == false)
-            {
-                spawnrates[i] -= reduction;
-            }
-        }
+    //    for (int i = 0; i < previousSpawnRates.Length - change; i++)
+    //    {
+    //        if (lockedSpawnRates[i] == false)
+    //        {
+    //            spawnrates[i] -= reduction;
+    //        }
+    //    }
 
-        var debug = 0f;
+    //    var debug = 0f;
 
-        for (int i = 0; i < previousCount + change; i++)
-        {
-            debug += spawnrates[i];
-        }
+    //    for (int i = 0; i < previousCount + change; i++)
+    //    {
+    //        debug += spawnrates[i];
+    //    }
 
-        Debug.Log($"Item added: Total = {debug}");
-    }
+    //    Debug.Log($"Item added: Total = {debug}");
+    //}
 
     private Rect GetRect()
     {
@@ -387,7 +387,7 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
             }
         }
 
-        maxValue -= 0.1f * (unlockedCount - 1);
+        //maxValue -= 0.1f * (unlockedCount - 1);
 
         for (int i = 0; i < values.Length; i++)
         {
@@ -402,6 +402,15 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
                 values[i] = Mathf.Clamp(values[i], 0.1f, maxValue);
             }
         }
+
+        var debug = 0f;
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            debug += values[i];
+        }
+
+        Debug.Log($"Item added: Total = {debug}");
 
         return values;
     }
