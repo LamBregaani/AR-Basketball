@@ -16,9 +16,9 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
     const string unlockTexture = "Assets/Editor/Textures/InspectorUnLock.png";
 
-    private int oldCount;
+    private int previousCount;
 
-    private float[] oldSpawnRates;
+    private float[] previousSpawnRates = new float[0];
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
@@ -96,13 +96,14 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         int length = count;
 
-        if(count > oldCount)
+        if(count > previousCount)
         {
             length = lockedSpawnRates.Length;
+            ItemAdded(spawnRates, count - previousCount);
         }
-        else if (count < oldCount)
+        else if (count < previousCount)
         {
-            ItemRemoved(spawnRates, oldCount - count);
+            ItemRemoved(spawnRates, previousCount - count);
         }
 
         Array.Copy(lockedSpawnRates, newLockedSpawnRates, length);
@@ -159,7 +160,7 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
                         var value = spawnRates[i];
 
                         if (value == 0)
-                            value = 1f;
+                            value = 0.1f;
 
                         var locked = newLockedSpawnRates[i];
 
@@ -234,29 +235,17 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         EditorGUI.EndProperty();
 
-        oldSpawnRates = newSpawnRates;
+        previousSpawnRates = newSpawnRates;
 
-        oldCount = count;
+        previousCount = count;
     }
 
     private void ItemRemoved(float[] spawnrates, int change)
     {
-        
-
-        var value = 0f;
-
-        var iter = 0;
-        
-        for (int i = oldSpawnRates.Length - 1; i > oldSpawnRates.Length - change - 1; i--)
-        {
-            value += oldSpawnRates[i];
-
-            iter++;
-        }
-
         var unlockedCount = 0;
 
-        for (int i = 0; i < oldSpawnRates.Length - 1; i++)
+
+        for (int i = 0; i < previousSpawnRates.Length - change; i++)
         {
             if (lockedSpawnRates[i] == false)
             {
@@ -264,16 +253,76 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
             }
         }
 
-        
-        var addition = value / (unlockedCount - change);
 
-        for (int i = 0; i < oldSpawnRates.Length - change; i++)
+        var remainder = 100f;
+
+
+        for (int i = 0; i < previousSpawnRates.Length - change; i++)
+        {
+            remainder -= previousSpawnRates[i];
+        }
+        
+
+        var addition = remainder / unlockedCount;
+
+        for (int i = 0; i < previousSpawnRates.Length - change; i++)
         {
             if (lockedSpawnRates[i] == false)
             {
                 spawnrates[i] += addition;
             }
         }
+
+        var debug = 0f;
+
+        for (int i = 0; i < spawnrates.Length; i++)
+        {
+            debug += spawnrates[i];
+        }
+
+        Debug.Log($"Item removed: Total = {debug}");
+    }
+
+    private void ItemAdded(float[] spawnrates, int change)
+    {
+        var useLockedValues = false;
+
+        var unlockedCount = 0;
+
+        for (int i = 0; i < previousSpawnRates.Length - change; i++)
+        {
+            if (lockedSpawnRates[i] == false)
+            {
+                unlockedCount++;
+            }
+        }
+
+        var remainder = 100f;
+
+
+        for (int i = 0; i < previousSpawnRates.Length - change; i++)
+        {
+            remainder -= previousSpawnRates[i];
+        }
+
+        var reduction = remainder / unlockedCount;
+
+        for (int i = 0; i < previousSpawnRates.Length - change; i++)
+        {
+            if (lockedSpawnRates[i] == false)
+            {
+                spawnrates[i] -= reduction;
+            }
+        }
+
+        var debug = 0f;
+
+        for (int i = 0; i < previousCount + change; i++)
+        {
+            debug += spawnrates[i];
+        }
+
+        Debug.Log($"Item added: Total = {debug}");
     }
 
     private Rect GetRect()
