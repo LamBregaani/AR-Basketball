@@ -146,7 +146,7 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
                     EditorGUI.BeginDisabledGroup(locked);
 
-                    value = EditorGUI.Slider(GetRect(), new GUIContent("Item #1 Rate"), value, 0.1f, 100f);
+                    value = EditorGUI.Slider(GetRect(), new GUIContent("Item #1 Rate"), value, 0f, 100f);
 
                     EditorGUI.EndDisabledGroup();
 
@@ -184,7 +184,7 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
                         EditorGUI.BeginDisabledGroup(locked);
 
-                        value = EditorGUI.Slider(GetRect(), new GUIContent($"Item #{i + 1} Rate"), value, 0.1f, 100);
+                        value = EditorGUI.Slider(GetRect(), new GUIContent($"Item #{i + 1} Rate"), value, 0f, 100);
 
                         EditorGUI.EndDisabledGroup();
 
@@ -389,6 +389,13 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         //maxValue -= 0.1f * (unlockedCount - 1);
 
+        if(maxValue == 0)
+        {
+            values[index] = oldValue;
+
+            return values;
+        }
+
         for (int i = 0; i < values.Length; i++)
         {
             var amount = (oldValue - newValue) / (unlockedCount - 1);
@@ -399,7 +406,7 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
                 if(i != index)
                 values[i] += amount;
 
-                values[i] = Mathf.Clamp(values[i], 0.1f, maxValue);
+                values[i] = Mathf.Clamp(values[i], 0f, maxValue);
             }
         }
 
