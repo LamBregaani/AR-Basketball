@@ -40,7 +40,7 @@ public class TimeLimit : GameRule
 
         onTimeUpdated?.Invoke(m_timeRemaining);
 
-        Debug.Log($"Time Left: {m_timeRemaining}");
+        //Debug.Log($"Time Left: {m_timeRemaining}");
 
         if (m_timeRemaining == 0)
             onTimeRunOut?.Invoke();
