@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEditor;
 
 
 [ExecuteAlways]
 [CreateAssetMenu(menuName = "Game Rules/Spawn Hoops", fileName = "New Hoop Properties")]
+
 public class HoopProperties : GameRule
 {
 
@@ -18,10 +20,12 @@ public class HoopProperties : GameRule
 
     //public List<Hoop> UniqueHoops { get => m_uniqueHoops; set => m_uniqueHoops = value; }
 
-    //public override void Init(GameModeController controller)
-    //{
-    //    HoopBuilder.Create(UniqueHoops[Random.Range(0, UniqueHoops.Count)], Vector3.zero);
-    //}
+    public override void Init(GameModeController controller)
+    {
+        HoopBuilder.Create(hoopsGroup.GetObject(), Vector3.zero);
+
+
+    }
 
     [SerializeField] public SpawnableObjectsGroup<Hoop> hoopsGroup;
 
