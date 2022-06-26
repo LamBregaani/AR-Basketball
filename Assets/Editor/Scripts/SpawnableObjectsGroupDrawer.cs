@@ -16,6 +16,12 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
     const string unlockTexture = "Assets/Editor/Textures/InspectorUnLock.png";
 
+    const string unlockRuntimeTextture = "Assets/Editor/Textures/InspectorLockRuntime.png";
+
+    public enum valueLockType { unlocked, locked, lockedRuntime}
+
+    private valueLockType[] lockType = new valueLockType[0];
+
     private int previousCount;
 
     private float[] previousSpawnRates = new float[0];
@@ -356,6 +362,30 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
         return value;
     }
 
+    //Creates a dropdown menu with two options
+    private void CreateDropdownMenu(SerializedProperty _property, string _dropdownName, string _item1Name, string _item2Name, bool _controlBool, string _fieldToModify)
+    {
+
+        var labelIcon = EditorGUIUtility.IconContent("Icon Dropdown");
+
+        labelIcon.text = _dropdownName;
+
+        if (EditorGUI.DropdownButton(GetRect(), labelIcon, FocusType.Keyboard, new GUIStyle()
+        {
+            fixedWidth = 150f,
+            border = new RectOffset(1, 1, 1, 1)
+        }))
+        {
+            GenericMenu menu = new GenericMenu();
+
+            //menu.AddItem(new GUIContent(_item1Name), !_controlBool, () => SetBoolProperty(_property, _fieldToModify, false));
+
+            //menu.AddItem(new GUIContent(_item2Name), _controlBool, () => SetBoolProperty(_property, _fieldToModify, true));
+
+            menu.ShowAsContext();
+        }
+    }
+
     public static float[] DistributeValues(bool[] lockedValues, float[] values, float newValue, float oldValue, int index)
     {
 
@@ -371,7 +401,6 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         if(unlockedCount == 1)
         {
-            
             values[index] = oldValue;
 
             return values;
@@ -387,8 +416,6 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
             }
         }
 
-        //maxValue -= 0.1f * (unlockedCount - 1);
-
         if(maxValue == 0)
         {
             values[index] = oldValue;
@@ -396,19 +423,80 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
             return values;
         }
 
-        for (int i = 0; i < values.Length; i++)
+
+        var takeAway = Mathf.Abs(oldValue - newValue);
+
+        var sign = 1;
+
+        if (newValue > oldValue)
+            sign = -1;
+
+
+        //for (int i = 0; i < values.Length; i++)
+        //{
+        //    var amount = (oldValue - newValue) / (unlockedCount - 1);   
+
+        //    if (lockedValues[i] == false)
+        //    {
+
+        //        if (i != index)
+        //            values[i] += amount;
+
+        //        values[i] = Mathf.Clamp(values[i], 0f, maxValue);
+
+
+
+        //    }
+        //}
+
+        //Debug.Log($"Take away = {takeAway}");
+
+        var iter = 0;
+        
+        while(takeAway > 0)
         {
-            var amount = (oldValue - newValue) / (unlockedCount - 1);
-                
+            if (iter > 10)
+                break;
+            iter++;
+            var amount = (takeAway) / (unlockedCount - 1);
 
-            if (lockedValues[i] == false)
+            for (int i = 0; i < values.Length; i++)
             {
-                if(i != index)
-                values[i] += amount;
+                if (lockedValues[i] == false)
+                {
+                    
+                    if (values[i] >= amount)
+                    {
+                        //Debug.Log($"maxValue = {maxValue}");
+                        if (i != index)
+                        {
+                            values[i] += amount * sign;
 
-                values[i] = Mathf.Clamp(values[i], 0f, maxValue);
+                            
+
+                            takeAway -= amount;
+                        }
+
+                        values[i] = Mathf.Clamp(values[i], 0f, maxValue);
+
+                    }
+                    else if(values[i] != 0 && values[i] < amount)
+                    {
+                        takeAway -= values[i];
+
+                        values[i] = 0;
+                        unlockedCount--;
+                    }
+
+                }
             }
+
+            //Debug.Log($"Take away = {takeAway}");
+
         }
+
+        Debug.Log(iter);
+        
 
         var debug = 0f;
 
