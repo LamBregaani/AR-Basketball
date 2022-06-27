@@ -5,12 +5,12 @@ using UnityEngine;
 
 public static class HoopBuilder
 {
-    private static HoopProperties m_hoopProperties;
+    private static SpawnHoops m_hoopProperties;
 
 
     static HoopBuilder()
     {
-        m_hoopProperties = HoopProperties.GetOrCreateDefaultInstance();
+        m_hoopProperties = SpawnHoops.GetOrCreateDefaultInstance();
 
     }
 
@@ -22,7 +22,7 @@ public static class HoopBuilder
         ObjectPivotPoints secondPivot;
 
         //Get the amount of posts pieces needed for the desired height
-        var postAmount = _hoop.height / 0.5f;
+        var postAmount = _hoop.GetHeight() / 0.5f;
 
         //Create the amount of posts needed
         for (int i = 0; i < postAmount; i++)
