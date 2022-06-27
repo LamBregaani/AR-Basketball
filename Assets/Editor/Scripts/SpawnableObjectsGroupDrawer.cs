@@ -8,21 +8,19 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
     //The rect postion used for displaying the properties
     private Rect currentRect;
 
+    //Bool for the spawnrates drop down
     bool showSpawnRates = true;
 
-    public bool[] lockedSpawnRates = new bool[0];
-
+    //Files for the lock textures
     const string lockTexture = "Assets/Editor/Textures/InspectorLock.png";
 
     const string unlockTexture = "Assets/Editor/Textures/InspectorUnLock.png";
 
-    const string unlockRuntimeTextture = "Assets/Editor/Textures/InspectorLockRuntime.png";
+    const string lockTexttureRuntime = "Assets/Editor/Textures/InspectorLockRuntime.png";
 
-    public enum valueLockType { unlocked, locked, lockedRuntime}
 
-    private valueLockType[] lockType = new valueLockType[0];
-
-    private int previousCount;
+    //
+    private SpawnableObjectsGroup<object>.valueLockType[] lockedSpawnRates = new SpawnableObjectsGroup<object>.valueLockType[0];
 
     private float[] previousSpawnRates = new float[0];
 
@@ -59,11 +57,9 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         currentRect = new Rect(_position.x, _position.y, _position.width, EditorGUIUtility.singleLineHeight);
 
-        bool valuesChanged = false;
-
         float changedValue = 0f;
 
-        int changedValueIndex = 0;
+        int changedValueIndex = -1;
 
         var count = 0;
 
@@ -98,18 +94,17 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         var newSpawnRates = new float[count];
 
-        var newLockedSpawnRates = new bool[count];
+        var newLockedSpawnRates = new SpawnableObjectsGroup<object>.valueLockType[count];
 
         int length = count;
 
-        if(count > previousCount)
+        if(count > previousSpawnRates.Length)
         {
             length = lockedSpawnRates.Length;
-            //ItemAdded(spawnRates, count - previousCount);
         }
-        else if (count < previousCount)
+        else if (count < previousSpawnRates.Length)
         {
-            ItemRemoved(spawnRates, previousCount - count);
+            ItemRemoved(spawnRates, previousSpawnRates.Length - count);
         }
 
         Array.Copy(lockedSpawnRates, newLockedSpawnRates, length);
@@ -160,62 +155,92 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
                 }
                 else
                 {
-
                     for (int i = 0; i < count; i++)
                     {
                         var value = spawnRates[i];
 
-                        //if (value == 0)
-                        //    value = 0.1f;
-
                         var locked = newLockedSpawnRates[i];
+
+                        var index = i;
 
                         Texture image = null;
 
-                        if (locked == true)
+                        var isUnlocked = false;
+
+                        var isLocked = false;
+
+                        var isLockedRuntime = false;
+
+                        switch (((int)locked))
                         {
-                            image = AssetDatabase.LoadAssetAtPath<Texture>(lockTexture);
-                        }
-                        else
-                        {
-                            image = AssetDatabase.LoadAssetAtPath<Texture>(unlockTexture);
+                            case 0:
+                                image = AssetDatabase.LoadAssetAtPath<Texture>(unlockTexture);
+                                isUnlocked = true;
+                                break;
+
+                            case 1:
+                                image = AssetDatabase.LoadAssetAtPath<Texture>(lockTexture);
+                                isLocked = true;
+                                break;
+
+                            case 2:
+                                image = AssetDatabase.LoadAssetAtPath<Texture>(lockTexttureRuntime);
+                                isLockedRuntime = true;
+                                break;
+
+                            default:
+                                image = AssetDatabase.LoadAssetAtPath<Texture>(unlockTexture);
+                                isUnlocked = true;
+                                break;
                         }
 
-                        var button = new GUIContent(image, "Lock this Spawnrate value");
-
-                        if (GUI.Button(new Rect(23, 49 + (20 * i), 20, 20), button, GUIStyle.none))
+                        if (EditorGUI.DropdownButton(new Rect(23, 49 + (20 * i), 20, 20), new GUIContent(image), FocusType.Keyboard, new GUIStyle()
                         {
-                            locked = !locked;
+                            fixedWidth = 150f,
+                            border = new RectOffset(1, 1, 1, 1)
+                        }))
+                        {
+                            GenericMenu menu = new GenericMenu();
+
+
+                            menu.AddDisabledItem(new GUIContent($"Item {index + 1}"));
+
+                            menu.AddSeparator("");
+
+                            menu.AddItem(new GUIContent($"Unlocked"), isUnlocked, () => newLockedSpawnRates[index] = SpawnableObjectsGroup<object>.valueLockType.unlocked);
+
+                            menu.AddItem(new GUIContent("Locked"), isLocked, () => newLockedSpawnRates[index] = SpawnableObjectsGroup<object>.valueLockType.locked);
+
+                            menu.AddItem(new GUIContent("Locked Runtime"), isLockedRuntime, () => newLockedSpawnRates[index] = SpawnableObjectsGroup<object>.valueLockType.lockedRuntime);
+
+                            menu.ShowAsContext();
+
+                            
                         }
 
-                        EditorGUI.BeginDisabledGroup(locked);
+                        EditorGUI.BeginDisabledGroup(!isUnlocked);
 
                         value = EditorGUI.Slider(GetRect(), new GUIContent($"Item #{i + 1} Rate"), value, 0f, 100);
 
                         EditorGUI.EndDisabledGroup();
 
-
-
-
                         newSpawnRates[i] = value;
 
                         if (spawnRates[i] != value)
                         {
-                            valuesChanged = true;
-
                             changedValue = value;
 
                             changedValueIndex = i;
                         }
-
-                        newLockedSpawnRates[i] = locked;
                     }
                 }
 
-                if (valuesChanged)
-                    DistributeValues(newLockedSpawnRates, newSpawnRates, changedValue, spawnRates[changedValueIndex], changedValueIndex);
+                if (changedValueIndex != -1)
+                    SpawnableObjectsGroup<object>.DistributeValuesEditor(newLockedSpawnRates, newSpawnRates, changedValue, spawnRates[changedValueIndex], changedValueIndex);
 
                 prop = _property.FindPropertyRelative("objectSpawnRates");
+
+                var lockedSpawnRatesProp = _property.FindPropertyRelative("lockedSpawnRates");
 
                 if (prop != null && newSpawnRates.Length > 0)
                 {
@@ -226,6 +251,17 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
                         var valueProp = prop.GetArrayElementAtIndex(i);
 
                         valueProp.floatValue = newSpawnRates[i];
+
+                        lockedSpawnRatesProp.arraySize = newLockedSpawnRates.Length;
+
+                        valueProp = lockedSpawnRatesProp.GetArrayElementAtIndex(i);
+
+                        var boolVal = false;
+
+                        if (newLockedSpawnRates[i] == SpawnableObjectsGroup<object>.valueLockType.lockedRuntime)
+                            boolVal = true;
+
+                        valueProp.boolValue = boolVal;
                     }
                 }
 
@@ -242,8 +278,6 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
         EditorGUI.EndProperty();
 
         previousSpawnRates = newSpawnRates;
-
-        previousCount = count;
     }
 
     private void ItemRemoved(float[] spawnrates, int change)
@@ -253,12 +287,12 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         for (int i = 0; i < previousSpawnRates.Length - change; i++)
         {
-            if (lockedSpawnRates[i] == false)
+
+            if (lockedSpawnRates[i] == SpawnableObjectsGroup<object>.valueLockType.unlocked)
             {
                 unlockedCount++;
             }
         }
-
 
         var remainder = 100f;
 
@@ -273,7 +307,8 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
 
         for (int i = 0; i < previousSpawnRates.Length - change; i++)
         {
-            if (lockedSpawnRates[i] == false)
+
+            if (lockedSpawnRates[i] == SpawnableObjectsGroup<object>.valueLockType.unlocked)
             {
                 spawnrates[i] += addition;
             }
@@ -289,48 +324,6 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
         Debug.Log($"Item removed: Total = {debug}");
     }
 
-    //private void ItemAdded(float[] spawnrates, int change)
-    //{
-    //    var useLockedValues = false;
-
-    //    var unlockedCount = 0;
-
-    //    for (int i = 0; i < previousSpawnRates.Length - change; i++)
-    //    {
-    //        if (lockedSpawnRates[i] == false)
-    //        {
-    //            unlockedCount++;
-    //        }
-    //    }
-
-    //    var remainder = 100f;
-
-
-    //    for (int i = 0; i < previousSpawnRates.Length - change; i++)
-    //    {
-    //        remainder -= previousSpawnRates[i];
-    //    }
-
-    //    var reduction = remainder / unlockedCount;
-
-    //    for (int i = 0; i < previousSpawnRates.Length - change; i++)
-    //    {
-    //        if (lockedSpawnRates[i] == false)
-    //        {
-    //            spawnrates[i] -= reduction;
-    //        }
-    //    }
-
-    //    var debug = 0f;
-
-    //    for (int i = 0; i < previousCount + change; i++)
-    //    {
-    //        debug += spawnrates[i];
-    //    }
-
-    //    Debug.Log($"Item added: Total = {debug}");
-    //}
-
     private Rect GetRect()
     {
         var value = currentRect;
@@ -338,175 +331,5 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
         currentRect = new Rect(currentRect.x, currentRect.y + 20, currentRect.width, 16);
 
         return value;
-    }
-
-    /// <summary>
-    /// Used to get the rect that should be used and iterate the postion down the passed number of times
-    /// </summary>
-    /// <param name="amount"></param>
-    /// <returns></returns>
-    private Rect GetRect(int amount)
-    {
-        if (amount < 0)
-        {
-            amount = 0;
-        }
-
-        var value = currentRect;
-
-        for (int i = 0; i < amount; i++)
-        {
-            currentRect = new Rect(currentRect.x, currentRect.y + 20, currentRect.width, 16);
-        }
-
-        return value;
-    }
-
-    //Creates a dropdown menu with two options
-    private void CreateDropdownMenu(SerializedProperty _property, string _dropdownName, string _item1Name, string _item2Name, bool _controlBool, string _fieldToModify)
-    {
-
-        var labelIcon = EditorGUIUtility.IconContent("Icon Dropdown");
-
-        labelIcon.text = _dropdownName;
-
-        if (EditorGUI.DropdownButton(GetRect(), labelIcon, FocusType.Keyboard, new GUIStyle()
-        {
-            fixedWidth = 150f,
-            border = new RectOffset(1, 1, 1, 1)
-        }))
-        {
-            GenericMenu menu = new GenericMenu();
-
-            //menu.AddItem(new GUIContent(_item1Name), !_controlBool, () => SetBoolProperty(_property, _fieldToModify, false));
-
-            //menu.AddItem(new GUIContent(_item2Name), _controlBool, () => SetBoolProperty(_property, _fieldToModify, true));
-
-            menu.ShowAsContext();
-        }
-    }
-
-    public static float[] DistributeValues(bool[] lockedValues, float[] values, float newValue, float oldValue, int index)
-    {
-
-        var unlockedCount = 0;
-
-        for (int i = 0; i < lockedValues.Length; i++)
-        {
-            if(lockedValues[i] == false)
-            {
-                unlockedCount++;
-            }
-        }
-
-        if(unlockedCount == 1)
-        {
-            values[index] = oldValue;
-
-            return values;
-        }
-
-        var maxValue = 100f;
-
-        for (int i = 0; i < values.Length; i++)
-        {
-            if (lockedValues[i] == true)
-            {
-                maxValue -= values[i];
-            }
-        }
-
-        if(maxValue == 0)
-        {
-            values[index] = oldValue;
-
-            return values;
-        }
-
-
-        var takeAway = Mathf.Abs(oldValue - newValue);
-
-        var sign = 1;
-
-        if (newValue > oldValue)
-            sign = -1;
-
-
-        //for (int i = 0; i < values.Length; i++)
-        //{
-        //    var amount = (oldValue - newValue) / (unlockedCount - 1);   
-
-        //    if (lockedValues[i] == false)
-        //    {
-
-        //        if (i != index)
-        //            values[i] += amount;
-
-        //        values[i] = Mathf.Clamp(values[i], 0f, maxValue);
-
-
-
-        //    }
-        //}
-
-        //Debug.Log($"Take away = {takeAway}");
-
-        var iter = 0;
-        
-        while(takeAway > 0)
-        {
-            if (iter > 10)
-                break;
-            iter++;
-            var amount = (takeAway) / (unlockedCount - 1);
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                if (lockedValues[i] == false)
-                {
-                    
-                    if (values[i] >= amount)
-                    {
-                        //Debug.Log($"maxValue = {maxValue}");
-                        if (i != index)
-                        {
-                            values[i] += amount * sign;
-
-                            
-
-                            takeAway -= amount;
-                        }
-
-                        values[i] = Mathf.Clamp(values[i], 0f, maxValue);
-
-                    }
-                    else if(values[i] != 0 && values[i] < amount)
-                    {
-                        takeAway -= values[i];
-
-                        values[i] = 0;
-                        unlockedCount--;
-                    }
-
-                }
-            }
-
-            //Debug.Log($"Take away = {takeAway}");
-
-        }
-
-        Debug.Log(iter);
-        
-
-        var debug = 0f;
-
-        for (int i = 0; i < values.Length; i++)
-        {
-            debug += values[i];
-        }
-
-        Debug.Log($"Item added: Total = {debug}");
-
-        return values;
     }
 }
