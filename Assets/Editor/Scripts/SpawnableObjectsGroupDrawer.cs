@@ -42,9 +42,18 @@ public class SpawnableObjectsGroupDrawer : PropertyDrawer
             if (showSpawnRates)
                 height += prop.arraySize * 20;
 
-            while (prop.Next(true))
+            var iter = prop.arraySize;
+
+            //prop.Next(true);
+            //prop.Next(true);
+
+            //Debug.Log(prop.displayName);
+
+
+            for (int i = 0; i < iter; i++)
             {
-                height += EditorGUI.GetPropertyHeight(prop, label) - EditorGUIUtility.singleLineHeight;
+                var element = prop.GetArrayElementAtIndex(i);
+                height += EditorGUI.GetPropertyHeight(element, label) - EditorGUIUtility.singleLineHeight;
             }
         }
 
