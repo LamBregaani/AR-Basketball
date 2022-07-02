@@ -17,6 +17,8 @@ public class SpawnHoops : GameRule
 
     [SerializeField] public SpawnableObjectsGroup<Hoop> hoopsGroup;
 
+    [SerializeField] private ObjectSpawner spawner;
+
     [HideInInspector]public const string filePath = "Assets/Resources/Game Properties/Default Hoop Builder Properties.asset";
 
 #if UNITY_EDITOR
