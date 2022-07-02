@@ -204,31 +204,31 @@ public class SpawnableObjectsGroup<T>
             control += values[i];
         }
 
-        if (control != 100)
-        {
-            for (int i = 0; i < availableValues.Count; i++)
-            {
-                var difference = control - 100;
+        //if (control != 100)
+        //{
+        //    for (int i = 0; i < availableValues.Count; i++)
+        //    {
+        //        var difference = control - 100;
 
-                if(difference >= 0)
-                {
-                    if (availableValues[1] > 0 + difference)
-                    {
-                        values[i] -= difference;
-                        break;
-                    }
-                }
-                else
-                {
-                    if (availableValues[1] < 100 - difference)
-                    {
-                        values[i] += difference;
-                        break;
-                    }
-                }
+        //        if(difference >= 0)
+        //        {
+        //            if (availableValues[1] > 0 + difference)
+        //            {
+        //                availableValues[i] -= difference;
+        //                break;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (availableValues[1] < 100 - difference)
+        //            {
+        //                availableValues[i] += difference;
+        //                break;
+        //            }
+        //        }
 
-            }
-        }
+        //    }
+        //}
 
         return values;
     }
