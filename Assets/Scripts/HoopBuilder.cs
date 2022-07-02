@@ -27,7 +27,7 @@ public static class HoopBuilder
         //Create the amount of posts needed
         for (int i = 0; i < postAmount; i++)
         {
-            var post = GameObject.Instantiate(_hoop.poseObj, _parent);
+            var post = GameObject.Instantiate(_hoop.postObj, _parent);
 
             secondPivot = post.GetComponent<ObjectPivotPoints>();
 
