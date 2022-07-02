@@ -9,7 +9,7 @@ public class Hoop
 
     public GameObject baseObj;
 
-    public GameObject poseObj;
+    public GameObject postObj;
 
     public GameObject postBendObj;
 

@@ -148,7 +148,7 @@ public class HoopDrawer : PropertyDrawer
             {              
                 EditorGUI.PropertyField(GetRect(), _property.FindPropertyRelative(nameof(Hoop.baseObj)));
 
-                EditorGUI.PropertyField(GetRect(), _property.FindPropertyRelative(nameof(Hoop.poseObj)));
+                EditorGUI.PropertyField(GetRect(), _property.FindPropertyRelative(nameof(Hoop.postObj)));
 
                 EditorGUI.PropertyField(GetRect(2), _property.FindPropertyRelative(nameof(Hoop.postBendObj)));
             }
